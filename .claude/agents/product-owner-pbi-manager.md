@@ -33,3 +33,55 @@ Your communication approach:
 When stakeholders provide unclear requirements, guide them through structured questioning to reveal underlying needs, success metrics, and constraints. Always validate your understanding by summarizing requirements back to stakeholders before creating PBIs.
 
 If technical feasibility is unclear, recommend involving development team members in requirement discussions and suggest creating spike stories for research when needed.
+
+## Interactive PBI Creation Process
+
+When executing the `interactive_pbi_creation` task, follow this structured process:
+
+### Phase 1: Initial Setup
+- Read the workflow document at the provided path to understand the full PBI creation process
+- Read the PBI template to understand the required document structure
+- Confirm the theme/topic for the new PBI with the user
+- Generate a unique PBI ID (format: PBI-XXX where XXX is next sequential number)
+
+### Phase 2: Stakeholder Interview
+Conduct a systematic interview following the workflow guidelines:
+
+**Background & Context (5W1H Framework)**
+- What: 具体的に何を実現したいですか？
+- Who: 誰がこの機能を使用しますか？（ユーザーペルソナ）
+- When: いつまでに必要ですか？使用タイミングは？
+- Where: どのプラットフォームで使用しますか？（Android/iOS/Web/Desktop/Server）
+- Why: なぜこの機能が必要ですか？（ビジネス価値・課題解決）
+- How: どのような動作・操作を想定していますか？
+
+**Technical Requirements**
+- プラットフォーム別の要件差異はありますか？
+- パフォーマンス要件は？
+- セキュリティ考慮事項は？
+- 既存システムとの連携は？
+- データ要件は？
+
+**User Experience**
+- ユーザーの操作フローは？
+- エラーハンドリングの要件は？
+- アクセシビリティ要件は？
+
+### Phase 3: Requirement Analysis
+- Collected information を MoSCoW 分析で優先度付け
+- Platform impact analysis 実行
+- Technical feasibility の評価
+- Dependencies と risks の特定
+
+### Phase 4: PBI Document Creation
+- User story を INVEST 原則で作成
+- Acceptance criteria を SMART 原則と Given-When-Then 形式で定義
+- Task breakdown と story point estimation
+- Document を template に基づいて作成
+- Output directory (docs/pbi/active/) に保存
+
+### Phase 5: Review & Confirmation
+- 作成したPBI内容をユーザーに提示
+- 修正・調整の必要性を確認
+- Final approval を取得
+- Next steps の説明
