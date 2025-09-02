@@ -123,7 +123,10 @@ PBIが`ready`状態になるためには、以下6カテゴリのチェックリ
 
 ## 専門Agent活用
 
-プロジェクトには10の専門agentが設定されており、開発プロセス全体をサポートします：
+プロジェクトには11の専門agentが設定されており、開発プロセス全体をサポートします：
+
+### プロジェクト管理
+- **strategic-project-manager** - プロジェクト全体統制、リソース管理、リスクマネジメント
 
 ### プロダクト・要件管理
 - **product-owner-pbi-manager** - PBI作成・管理、ステークホルダーヒアリング
@@ -146,8 +149,70 @@ PBIが`ready`状態になるためには、以下6カテゴリのチェックリ
 ### Agent活用例
 ```bash
 # Agentを使用したタスクの例
+- プロジェクト計画: strategic-project-managerで全体統制・リソース配分
 - 新機能のPBI作成: product-owner-pbi-managerでヒアリング実行
 - UI設計: design-system-ui-architectでデザインシステム構築
 - アーキテクチャ検討: architecture-strategistで設計レビュー
 - テスト計画: qa-test-strategistで包括的テスト設計
 ```
+
+### Strategic Project Manager詳細仕様
+
+**Agent名**: `strategic-project-manager`
+
+**専門領域**:
+- プロジェクト全体統制とガバナンス
+- マルチプラットフォーム開発のリソース管理
+- PBI優先度調整と開発スケジューリング
+- クロスファンクショナルチーム連携
+- リスク管理と品質コントロール
+- ステークホルダー管理と進捗報告
+
+**主要機能**:
+
+1. **プロジェクト計画管理**
+   - WBS統合とマイルストーン設定
+   - Kotlin Multiplatform特有のタスク依存関係管理
+   - プラットフォーム別開発優先度調整
+   - 開発チーム間の作業分散とロードバランシング
+
+2. **リソース管理**
+   - 専門Agent活用戦略の策定
+   - 開発者スキルマッピングとアサイン最適化
+   - 並行開発タスクの効率化
+   - ボトルネック特定と解消策提案
+
+3. **品質・リスク管理**
+   - Definition of Done準拠チェック
+   - 技術的負債の監視と改善計画
+   - プラットフォーム間の品質一貫性確保
+   - セキュリティ・パフォーマンスリスク評価
+
+4. **ステークホルダー管理**
+   - 進捗レポートとダッシュボード生成
+   - 課題エスカレーションと解決調整
+   - 要件変更の影響分析と対応判断
+   - チーム間コミュニケーション促進
+
+**活用シーン**:
+```bash
+# プロジェクト開始時
+strategic-project-manager: 全体計画策定、リソース配分、リスク分析
+
+# 開発中の統制
+strategic-project-manager: 進捗監視、ボトルネック解消、優先度調整
+
+# リリース前の品質確保
+strategic-project-manager: 品質ゲート、リリース判定、展開計画
+
+# 課題発生時の対応
+strategic-project-manager: 影響分析、対応策立案、リソース再配分
+```
+
+**他Agentとの連携パターン**:
+
+- **product-owner-pbi-manager**: PBI優先度調整、要件変更影響分析
+- **architecture-strategist**: 技術的意思決定、アーキテクチャリスク評価  
+- **qa-test-strategist**: 品質基準設定、テスト戦略調整
+- **frontend-generalist-dev** / **backend-security-architect**: 開発進捗管理、技術課題解決
+- **design-system-ui-architect**: デザインシステム統制、UI一貫性管理
