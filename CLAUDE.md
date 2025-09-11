@@ -2,6 +2,27 @@
 
 このファイルは、このリポジトリでコードを扱う際のClaude Code (claude.ai/code) への指針を提供します。
 
+## リポジトリ情報
+
+- **リモートリポジトリ**: https://github.com/judowine/PlaygroundWithClaudeCode
+- **メインブランチ**: main
+- **開発ブランチ**: manager_multiagent
+
+### Git操作の基本
+```bash
+# リモートの状態確認
+git remote -v
+
+# ブランチ作成・切り替え
+git checkout -b feature/[PBI-ID]-[feature-name]
+
+# 変更のプッシュ
+git push -u origin [branch-name]
+
+# プルリクエスト作成
+gh pr create --title "[PR-Title]" --body "[PR-Description]"
+```
+
 ## プロジェクト概要
 
 これはAndroid、iOS、Web（WASM）、Desktop（JVM）、Serverプラットフォームを対象としたKotlin Multiplatformプロジェクトです。UIにはCompose Multiplatform、サーバーコンポーネントにはKtorを使用しています。
