@@ -216,3 +216,195 @@ strategic-project-manager: 影響分析、対応策立案、リソース再配�
 - **qa-test-strategist**: 品質基準設定、テスト戦略調整
 - **frontend-generalist-dev** / **backend-security-architect**: 開発進捗管理、技術課題解決
 - **design-system-ui-architect**: デザインシステム統制、UI一貫性管理
+
+## 実装開発フロー（Step 1-2 Standard Process）
+
+このプロジェクトでは、PBIの`ready`状態から機能実装完了（統合テスト成功）まで、以下の標準化された2段階プロセスに従います：
+
+### Step 1: Skeleton実装
+PBIの`ready`状態から開始し、実装の骨格を構築します。
+
+#### 1.1 Design Doc作成
+**目的**: 技術仕様と受け入れ条件の明確化
+
+**使用Agent**: `architecture-strategist` + `design-system-ui-architect`
+
+**成果物**: `docs/design/design-docs/[PBI-ID]-design.md`
+
+**内容**:
+- **使用技術**: Kotlin Multiplatform、Compose Multiplatform、Ktor等の具体的技術選択
+- **受け入れ条件**: PBIから抽出した動作要件を技術的に詳述
+- **アーキテクチャ概要**: Layered Architectureでの配置と依存関係
+- **プラットフォーム対応**: 各プラットフォームでの実装方針
+
+**品質基準**:
+- 受け入れ条件が測定可能で具体的
+- 技術選択に明確な根拠
+- プラットフォーム間の一貫性確保
+
+#### 1.2 Skeleton実装
+**目的**: 全体構造の可視化と早期統合の実現
+
+**使用Agent**: `frontend-generalist-dev` + `backend-security-architect`
+
+**実装範囲**:
+```kotlin
+// 例: 主要なクラス・メソッド・プロパティを空実装で定義
+class UserRepository {
+    // TODO: データベースアクセス実装
+    suspend fun findUserById(id: String): User? = null
+    
+    // TODO: ユーザー作成処理実装  
+    suspend fun createUser(user: User): Result<User> = TODO()
+}
+
+data class User(
+    val id: String,
+    val name: String,
+    // TODO: その他必要プロパティ追加
+)
+```
+
+**実装基準**:
+- 全てのクラス、メソッド、プロパティを定義
+- モック実装またはTODOコメントで実装方針を明記
+- ビルド・実行可能な状態を保持
+- Layered Architectureの各層を適切に配置
+
+#### 1.3 Skeleton PR提出
+**PR要件**:
+- **タイトル**: `[Skeleton] [PBI-ID] [機能名]`
+- **説明**: Design Docへのリンクと実装方針の要約
+- **レビュー観点**: アーキテクチャ構造、命名規則、TODO内容の妥当性
+
+**品質チェック**:
+```bash
+./gradlew build                    # ビルド成功確認
+./gradlew allTests                 # 基本テスト実行
+./gradlew lint                     # コード品質チェック
+```
+
+### Step 2: レイヤー別実装とテスト
+Skeleton実装を基に、Layered Architectureに従って段階的に実装します。
+
+#### 2.1 タスク分割
+**分割基準**: Layered Architectureの各層
+```
+1. Data Layer (Repository, DataSource, Entity)
+2. Domain Layer (UseCase, Domain Model, Repository Interface)  
+3. Presentation Layer (ViewModel, UI Components)
+4. Platform Layer (Platform-specific implementations)
+```
+
+**使用Agent**: `architecture-strategist`による分割支援
+
+#### 2.2 各レイヤー実装
+**実装順序**: Data → Domain → Presentation → Platform
+
+**各レイヤーPR要件**:
+- **タイトル**: `[Layer] [PBI-ID] [レイヤー名] Implementation`
+- **実装完了基準**: 
+  - 該当レイヤーの全TODOを実装
+  - 単体テスト実装・成功
+  - 上位レイヤーとの統合確認
+
+**品質基準**:
+- テストカバレッジ > 80%
+- 循環的複雑度 < 10
+- レイヤー間依存関係の適切性
+
+#### 2.3 統合テスト実装
+**目的**: Design Docの受け入れ条件を満たす動作保証
+
+**実装場所**: ViewModelレベルでの結合テスト
+
+**使用Agent**: `qa-test-strategist`
+
+**テスト実装基準**:
+```kotlin
+@Test
+fun `ユーザー作成が正常に完了する`() = runTest {
+    // Given: 有効なユーザー情報
+    val userInput = CreateUserRequest(name = "テストユーザー")
+    
+    // When: ユーザー作成を実行
+    val result = viewModel.createUser(userInput)
+    
+    // Then: 受け入れ条件を満たす
+    assertTrue(result.isSuccess)
+    assertEquals("テストユーザー", result.getOrNull()?.name)
+    // TODO: Design Docの全受け入れ条件をテスト
+}
+```
+
+**統合テストPR要件**:
+- **タイトル**: `[Integration] [PBI-ID] [機能名] Integration Tests`
+- **内容**: Design Docの受け入れ条件の完全実装とテスト
+- **成果物**: 動作する機能とテストコード
+
+### 開発完了の定義
+
+統合テスト成功をもって**開発完了**とします。この時点でPBIは`active`から`completed`状態に移行します。
+
+**完了条件**:
+- 統合実装品質ゲート合格
+- Design Docの全受け入れ条件を満たす
+- 全プラットフォームでビルド・テスト成功
+- コードレビュー完了・マージ済み
+
+**次段階**: リリース・運用保守フローへ移行（別ワークフロー）
+
+### 品質ゲート
+
+#### Skeleton実装品質ゲート
+```yaml
+criteria:
+  design_doc_quality: ">= 4.0"
+  skeleton_completeness: "100% (全構造定義済み)"
+  build_success: "全プラットフォームでビルド成功"
+  architecture_compliance: "Layered Architecture準拠"
+```
+
+#### 統合実装品質ゲート  
+```yaml
+criteria:
+  feature_completeness: "100% (受け入れ条件満足)"
+  test_coverage: ">= 80%"
+  integration_success: "全統合テスト成功"
+  performance_requirements: "応答時間・リソース使用量基準満足"
+```
+
+### 開発効率化のコツ
+
+#### Agent活用パターン
+```bash
+# Step 1: Skeleton開発
+architecture-strategist: Design Doc作成・アーキテクチャ設計
+frontend-generalist-dev: UI Skeleton実装
+backend-security-architect: API・データ層Skeleton実装
+
+# Step 2: レイヤー別実装
+# Data Layer実装時
+backend-security-architect: Repository、DataSource実装
+
+# Domain Layer実装時  
+architecture-strategist: UseCase、ビジネスロジック実装
+
+# Presentation Layer実装時
+frontend-generalist-dev: ViewModel、UI Components実装
+
+# テスト実装時
+qa-test-strategist: 統合テスト戦略・実装
+```
+
+#### トラブルシューティング
+- **Skeleton段階での設計変更**: Design Docを更新してからSkeleton修正
+- **レイヤー間統合エラー**: 該当レイヤーの境界設計をarchitecture-strategistで見直し
+- **テスト失敗**: qa-test-strategistでテスト戦略を再検討
+
+### テンプレート・参考資料
+- **Design Docテンプレート**: `docs/design/templates/design-doc-template.md`
+- **PBI管理ワークフロー**: `docs/pbi/workflow.md`
+- **品質ゲート詳細**: `docs/workflow/quality-gates.md`
+- **Multi-Agent開発プロセス**: `docs/workflow/multi-agent-development.md`
+- **リリース・運用保守フロー**: `docs/workflow/release-operations-workflow.md`
