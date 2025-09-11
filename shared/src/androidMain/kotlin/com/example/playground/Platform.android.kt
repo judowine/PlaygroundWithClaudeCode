@@ -7,3 +7,9 @@ class AndroidPlatform : Platform {
 }
 
 actual fun getPlatform(): Platform = AndroidPlatform()
+
+/**
+ * Android implementation for getting current time in milliseconds
+ * @return Current timestamp in milliseconds since epoch
+ */
+actual fun getCurrentTimeMillis(): Long = System.currentTimeMillis()

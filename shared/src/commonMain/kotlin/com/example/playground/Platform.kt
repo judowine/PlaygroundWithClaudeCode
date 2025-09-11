@@ -5,3 +5,9 @@ interface Platform {
 }
 
 expect fun getPlatform(): Platform
+
+/**
+ * Platform-specific implementation for getting current time in milliseconds
+ * @return Current timestamp in milliseconds since epoch
+ */
+expect fun getCurrentTimeMillis(): Long

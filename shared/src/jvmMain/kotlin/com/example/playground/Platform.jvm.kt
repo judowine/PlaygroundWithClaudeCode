@@ -5,3 +5,9 @@ class JVMPlatform: Platform {
 }
 
 actual fun getPlatform(): Platform = JVMPlatform()
+
+/**
+ * JVM implementation for getting current time in milliseconds
+ * @return Current timestamp in milliseconds since epoch
+ */
+actual fun getCurrentTimeMillis(): Long = System.currentTimeMillis()

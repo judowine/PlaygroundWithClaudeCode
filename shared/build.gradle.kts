@@ -41,8 +41,15 @@ kotlin {
     
     sourceSets {
         commonMain.dependencies {
-            // put your Multiplatform dependencies here
+            implementation(libs.kotlinx.coroutines.core)
         }
+        
+        androidMain.dependencies {
+            implementation(libs.androidx.room.runtime)
+            implementation(libs.androidx.room.ktx)
+            implementation(libs.kotlinx.coroutines.android)
+        }
+        
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
@@ -60,3 +67,7 @@ android {
         minSdk = libs.versions.android.minSdk.get().toInt()
     }
 }
+
+// TODO: Add proper Room annotation processing setup for Kotlin Multiplatform
+// This will be needed for actual implementation phase
+// Consider using KSP (Kotlin Symbol Processing) for Room in KMP
