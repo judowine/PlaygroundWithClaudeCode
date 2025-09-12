@@ -23,6 +23,121 @@ git push -u origin [branch-name]
 gh pr create --title "[PR-Title]" --body "[PR-Description]"
 ```
 
+### コミット管理ルール
+
+#### 基本方針
+**読みやすさ重視**: 変更内容を理解しやすい単位でコミットを分割します
+
+**コミット単位の基準**:
+- **1つの論理的変更**: 1つのコミットには1つの論理的な変更のみを含める
+- **変更行数制限**: 1コミットあたり**200行以内**を目標とする
+- **独立性**: 各コミットが独立してビルド・テスト可能な状態を保つ
+
+#### コミットメッセージフォーマット
+
+**基本形式**:
+```
+[分類] [対象]: [変更内容の簡潔な説明]
+
+- 変更の詳細や理由（必要に応じて）
+- 影響範囲や注意点（必要に応じて）
+
+[PBI-ID] 関連PBI参照
+```
+
+**分類タグ**:
+- **[feat]**: 新機能追加
+- **[fix]**: バグ修正  
+- **[refactor]**: リファクタリング
+- **[test]**: テスト追加・修正
+- **[docs]**: ドキュメント更新
+- **[style]**: コードスタイル修正（機能変更なし）
+- **[perf]**: パフォーマンス改善
+- **[build]**: ビルドシステム関連
+- **[ci]**: CI設定変更
+
+**例**:
+```
+[feat] TodoRepository: getAllTodos メソッドを追加
+
+- Room を使用した TODO 項目の取得機能を実装
+- Result<T> パターンでエラーハンドリング対応
+- Flow による リアルタイム更新のサポート
+
+PBI-001A TODO一覧表示機能
+```
+
+#### コミット分割のガイドライン
+
+**推奨する分割パターン**:
+
+1. **機能単位分割**
+   ```bash
+   git commit -m "[feat] TodoItem: ドメインモデルを追加"
+   git commit -m "[feat] TodoRepository: インターフェースを定義"
+   git commit -m "[feat] GetTodosUseCase: UseCase を実装"
+   ```
+
+2. **レイヤー単位分割**
+   ```bash
+   git commit -m "[feat] Data Layer: TodoDao と Entity を追加"
+   git commit -m "[feat] Domain Layer: UseCase 群を実装"
+   git commit -m "[feat] Presentation Layer: ViewModel を追加"
+   ```
+
+3. **ファイル種別単位分割**
+   ```bash
+   git commit -m "[feat] Models: Todo関連のドメインモデルを追加"
+   git commit -m "[test] Models: TodoItem のユニットテストを追加"
+   git commit -m "[docs] Models: Todo モデルのKDoc を追加"
+   ```
+
+#### 避けるべきコミットパターン
+
+**❌ 避けるべき例**:
+```bash
+# 複数の論理変更を含む大きすぎるコミット
+git commit -m "TODO機能の実装"  # 500行変更、複数ファイル
+
+# 曖昧すぎる説明
+git commit -m "修正"
+git commit -m "更新"
+
+# 関係のない変更を含む
+git commit -m "[feat] TodoList: 一覧画面とバグ修正"
+```
+
+**✅ 推奨例**:
+```bash
+# 適切な粒度での分割
+git commit -m "[feat] TodoList: 一覧画面レイアウト追加"      # 80行
+git commit -m "[feat] TodoList: 削除ボタンの動作を実装"     # 45行
+git commit -m "[fix] TodoList: アイテム重複表示を修正"      # 12行
+```
+
+#### 自動コミット分割のヒント
+
+**ステージング活用**:
+```bash
+# ファイルの一部のみをステージング
+git add -p [filename]
+
+# 特定ファイルのみコミット
+git add [specific-files]
+git commit -m "[feat] [対象]: [変更内容]"
+
+# 残りの変更を別コミット
+git add [remaining-files] 
+git commit -m "[test] [対象]: [テスト内容]"
+```
+
+**コミット前チェックリスト**:
+- [ ] 1つの論理的変更のみを含んでいる
+- [ ] 変更行数が200行以内である
+- [ ] ビルドが成功する
+- [ ] 関連テストが通る
+- [ ] コミットメッセージが明確である
+
 ## プロジェクト概要
 
 これはAndroid、iOS、Web（WASM）、Desktop（JVM）、Serverプラットフォームを対象としたKotlin Multiplatformプロジェクトです。UIにはCompose Multiplatform、サーバーコンポーネントにはKtorを使用しています。
@@ -238,12 +353,195 @@ strategic-project-manager: 影響分析、対応策立案、リソース再配�
 - **frontend-generalist-dev** / **backend-security-architect**: 開発進捗管理、技術課題解決
 - **design-system-ui-architect**: デザインシステム統制、UI一貫性管理
 
+## PBI分割戦略
+
+効率的な開発とレビューのため、PBIは適切な粒度で分割する必要があります。特にSkeleton実装時の変更行数を600行以内に抑えることを目標とします。
+
+### PBI分割の基本方針
+
+**変更行数制限**: Skeleton PRの変更行数は**600行以内**を目標とします
+- **測定基準**: `git diff --stat`による追加・変更行数の合計
+- **制限超過時**: PBI分割または段階的実装を検討
+
+### 分割パターン
+
+#### 1. 機能単位分割
+**適用基準**: 独立してテスト・デプロイ可能な機能境界
+```
+例: 「TODOアプリ」を分割
+├── PBI-001A: TODO作成機能
+├── PBI-001B: TODO一覧表示機能  
+├── PBI-001C: TODO編集・削除機能
+└── PBI-001D: TODO検索・フィルタ機能
+```
+
+**メリット**: 
+- 機能ごとの独立開発が可能
+- テストとデプロイの並列化
+- 障害影響の局所化
+
+#### 2. ユーザージャーニー単位分割
+**適用基準**: ユーザーが価値を感じられる操作フローの完結単位
+```
+例: 「ユーザー管理」を分割
+├── PBI-002A: 新規ユーザー登録フロー
+├── PBI-002B: ログイン・認証フロー
+├── PBI-002C: プロファイル管理フロー
+└── PBI-002D: パスワード変更フロー
+```
+
+**メリット**:
+- ユーザー価値の早期提供
+- E2Eテストの明確化
+- ステークホルダーレビューの容易さ
+
+#### 3. 技術コンポーネント単位分割
+**適用基準**: アーキテクチャ境界に沿った技術的分割
+```
+例: 「通知システム」を分割
+├── PBI-003A: 通知データモデルとRepository
+├── PBI-003B: 通知送信UseCase
+├── PBI-003C: 通知UI表示機能
+└── PBI-003D: プラットフォーム固有通知実装
+```
+
+**メリット**:
+- 技術専門性の活用
+- レイヤー別並行開発
+- 技術負債の管理しやすさ
+
+### 分割判定フローチャート
+
+```mermaid
+graph TD
+    A[PBI分析開始] --> B{Skeleton予測行数}
+    B -->|600行以下| C[単一PBIで実装]
+    B -->|600行超過| D[分割戦略選択]
+    
+    D --> E[機能単位分割]
+    D --> F[ユーザージャーニー分割]
+    D --> G[技術コンポーネント分割]
+    
+    E --> H[分割後PBI作成]
+    F --> H
+    G --> H
+    
+    H --> I[各PBIのSkeleton行数再評価]
+    I -->|各PBI 600行以下| J[分割完了]
+    I -->|まだ超過| K[追加分割検討]
+    K --> D
+```
+
+### 分割後PBI命名規則
+
+**基本形式**: `[元PBI-ID][分割識別子]: [機能説明]`
+
+**分割識別子**:
+- **A, B, C, ...**: 機能単位分割
+- **-Journey1, -Journey2, ...**: ユーザージャーニー分割  
+- **-Data, -Domain, -UI, -Platform**: 技術コンポーネント分割
+
+**例**:
+```
+元PBI: PBI-001: ローカル完結TODOアプリ
+
+機能単位分割後:
+├── PBI-001A: TODO作成機能
+├── PBI-001B: TODO一覧表示機能
+├── PBI-001C: TODO編集・削除機能
+```
+
 ## 実装開発フロー（Step 1-2 Standard Process）
 
 このプロジェクトでは、PBIの`ready`状態から機能実装完了（統合テスト成功）まで、以下の標準化された2段階プロセスに従います：
 
 ### Step 1: Skeleton実装
-PBIの`ready`状態から開始し、実装の骨格を構築します。
+PBIの`ready`状態から開始し、実装の骨格を構築します。プロジェクトの性質と要件に応じて適切な実装レベルを選択できます。
+
+### Step 1実装の選択肢
+
+プロジェクトの性質と要件に応じて、以下から選択：
+
+**Option A: Minimal → Full → Layer実装**
+```
+Step 1.0: Minimal Skeleton → Step 1.2: Full Skeleton → Step 2: Layer実装
+```
+- 大規模・複雑な機能向け
+- 早期レビューとアーキテクチャ確認重視
+- ステークホルダーとの方向性合意が必要
+
+**Option B: Full → Layer実装（従来）**
+```
+Step 1.2: Full Skeleton → Step 2: Layer実装  
+```
+- 中規模機能向け
+- 動作確認を早期に行いたい場合
+- プロトタイピング重視
+
+**Option C: Direct Layer実装**
+```
+Step 2: Layer実装（Skeletonスキップ）
+```
+- 小規模・定型的な機能向け
+- アーキテクチャが確定済み
+- 高速開発重視
+
+#### 1.0 Minimal Skeleton実装
+**目的**: 最小限の構造定義による早期レビューと方向性確認
+
+**実装基準**:
+- **インターフェース定義**: 全メソッドシグネチャのみ
+- **クラス構造**: プロパティ定義とコンストラクタのみ  
+- **実装**: 全メソッドを`TODO()`で実装
+- **依存関係**: 型定義のみ、実装は一切行わない
+- **変更行数制限**: 600行以内（`git diff --stat`基準）
+
+**実装例**:
+```kotlin
+// Domain Layer - 型定義のみ
+interface TodoRepository {
+    suspend fun getAllTodos(): Result<List<TodoItem>> = TODO()
+    suspend fun createTodo(todo: TodoItem): Result<TodoItem> = TODO()
+}
+
+// UseCase - 構造のみ
+class GetTodosUseCase(
+    private val repository: TodoRepository
+) {
+    suspend operator fun invoke(): Result<List<TodoItem>> = TODO()
+}
+
+// ViewModel - 状態プロパティのみ
+class TodoListViewModel(
+    private val getTodosUseCase: GetTodosUseCase
+) : ViewModel() {
+    private val _uiState = MutableStateFlow<TodoListUiState>(TODO())
+    val uiState: StateFlow<TodoListUiState> = TODO()
+    
+    fun loadTodos() = TODO()
+    fun deleteTodo(id: Long) = TODO()
+}
+
+// UI State - データクラスのみ
+data class TodoListUiState(
+    val todos: List<TodoItem> = emptyList(),
+    val isLoading: Boolean = false,
+    val errorMessage: String? = null
+)
+```
+
+**禁止事項**:
+- データベース実装（Room、SQLite等）
+- 実際の業務ロジック記述
+- エラーハンドリングの詳細実装
+- プラットフォーム固有実装
+- テストコード（構造確認のみ）
+
+**完了基準**:
+- 全クラス・メソッドが定義済み
+- コンパイルエラーなし（ただし実行時は全てTODO例外）
+- アーキテクチャ構造の可視化完了
+- 依存関係グラフが明確
 
 #### 1.1 Design Doc作成
 **目的**: 技術仕様と受け入れ条件の明確化
@@ -263,8 +561,8 @@ PBIの`ready`状態から開始し、実装の骨格を構築します。
 - 技術選択に明確な根拠
 - プラットフォーム間の一貫性確保
 
-#### 1.2 Skeleton実装
-**目的**: 全体構造の可視化と早期統合の実現
+#### 1.2 Full Skeleton実装
+**目的**: 動作可能なプロトタイプレベルの構造実装
 
 **使用Agent**: `frontend-generalist-dev` + `backend-security-architect`
 
@@ -291,12 +589,42 @@ data class User(
 - モック実装またはTODOコメントで実装方針を明記
 - ビルド・実行可能な状態を保持
 - Layered Architectureの各層を適切に配置
+- **変更行数制限**: 600行以内（`git diff --stat`基準）
 
 #### 1.3 Skeleton PR提出
 **PR要件**:
 - **タイトル**: `[Skeleton] [PBI-ID] [機能名]`
 - **説明**: Design Docへのリンクと実装方針の要約
 - **レビュー観点**: アーキテクチャ構造、命名規則、TODO内容の妥当性
+
+**段階的コミット戦略**:
+Skeleton実装時は以下の順序で段階的にコミット：
+
+```bash
+# 1. Domain Layer（型定義）
+git commit -m "[feat] Domain: TodoItem モデルを追加"
+git commit -m "[feat] Domain: TodoRepository インターフェースを定義"
+git commit -m "[feat] Domain: UseCase クラス群を追加"
+
+# 2. Data Layer（インターフェース実装）
+git commit -m "[feat] Data: TodoEntity とマッパーを追加"
+git commit -m "[feat] Data: TodoDao インターフェースを定義"
+git commit -m "[feat] Data: TodoRepositoryImpl スケルトンを実装"
+
+# 3. Presentation Layer（UI構造）
+git commit -m "[feat] Presentation: TodoListUiState を定義"
+git commit -m "[feat] Presentation: TodoListViewModel スケルトンを実装"
+git commit -m "[feat] Presentation: TodoList画面コンポーネント構造を追加"
+
+# 4. Platform Layer（プラットフォーム固有）
+git commit -m "[feat] Platform: Android用DatabaseModule追加"
+git commit -m "[feat] Platform: 依存性注入設定を追加"
+```
+
+**コミット粒度の目安**:
+- **1コミット**: 200行以内、単一責任の実装
+- **PR全体**: 600行以内、5-10コミットに分割
+- **各コミット**: 独立してビルド成功する状態を保持
 
 **品質チェック**:
 ```bash
@@ -384,6 +712,9 @@ criteria:
   skeleton_completeness: "100% (全構造定義済み)"
   build_success: "全プラットフォームでビルド成功"
   architecture_compliance: "Layered Architecture準拠"
+  commit_quality: "適切な粒度でコミット分割済み"
+  change_lines: "<= 600行 (PR全体)"
+  commit_count: "5-10コミット（Skeleton実装）"
 ```
 
 #### 統合実装品質ゲート  
