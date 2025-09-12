@@ -1,0 +1,51 @@
+-- Design Docに基づくTODOデータベーススキーマ定義
+CREATE TABLE todo_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL CHECK(length(title) > 0),
+    description TEXT NOT NULL DEFAULT '',
+    is_completed INTEGER NOT NULL DEFAULT 0 CHECK(is_completed IN (0, 1)),
+    created_at INTEGER NOT NULL,
+    completed_at INTEGER,
+    CONSTRAINT check_completed_at CHECK(
+        (is_completed = 0 AND completed_at IS NULL) OR
+        (is_completed = 1 AND completed_at IS NOT NULL)
+    )
+);
+
+CREATE INDEX idx_todo_created_at ON todo_items(created_at DESC);
+CREATE INDEX idx_todo_is_completed ON todo_items(is_completed);
+CREATE INDEX idx_todo_title ON todo_items(title);
+
+-- Basic CRUD operations
+insertTodo:
+INSERT INTO todo_items(title, description, created_at)
+VALUES (?, ?, ?);
+
+updateTodo:
+UPDATE todo_items SET
+    title = ?,
+    description = ?,
+    is_completed = ?,
+    completed_at = ?
+WHERE id = ?;
+
+deleteTodo:
+DELETE FROM todo_items WHERE id = ?;
+
+selectAllTodos:
+SELECT * FROM todo_items ORDER BY created_at DESC;
+
+selectTodoById:
+SELECT * FROM todo_items WHERE id = ?;
+
+selectTodosByCompletion:
+SELECT * FROM todo_items 
+WHERE is_completed = ? 
+ORDER BY created_at DESC;
+
+-- Performance queries
+selectTodosCount:
+SELECT COUNT(*) FROM todo_items;
+
+selectCompletedTodosCount:
+SELECT COUNT(*) FROM todo_items WHERE is_completed = 1;
