@@ -22,31 +22,31 @@ kotlin {
     
     jvm()
     
-    @OptIn(ExperimentalWasmDsl::class)
-    wasmJs {
-        browser {
-            val rootDirPath = project.rootDir.path
-            val projectDirPath = project.projectDir.path
-            commonWebpackConfig {
-                devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
-                    static = (static ?: mutableListOf()).apply {
-                        // Serve sources to debug inside browser
-                        add(rootDirPath)
-                        add(projectDirPath)
-                    }
-                }
-            }
-        }
-    }
+    // wasmJs target disabled temporarily due to SQLDelight compatibility issues
+    // @OptIn(ExperimentalWasmDsl::class)
+    // wasmJs {
+    //     browser {
+    //         val rootDirPath = project.rootDir.path
+    //         val projectDirPath = project.projectDir.path
+    //         commonWebpackConfig {
+    //             devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
+    //                 static = (static ?: mutableListOf()).apply {
+    //                     // Serve sources to debug inside browser
+    //                     add(rootDirPath)
+    //                     add(projectDirPath)
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
     
     sourceSets {
         commonMain.dependencies {
-            implementation(libs.sqldelight.driver)
-            implementation(libs.sqldelight.coroutines)
             implementation(libs.kotlinx.datetime)
         }
         androidMain.dependencies {
             implementation(libs.sqldelight.android)
+            implementation(libs.sqldelight.coroutines)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
