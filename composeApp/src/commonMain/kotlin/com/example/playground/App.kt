@@ -1,49 +1,32 @@
 package com.example.playground
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import org.jetbrains.compose.resources.painterResource
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.playground.ui.components.todo.TodoListScreen
+import com.example.playground.ui.theme.TodoAppTheme
+import com.example.playground.ui.viewmodel.TodoListViewModel
 import org.jetbrains.compose.ui.tooling.preview.Preview
-
-import playground.composeapp.generated.resources.Res
-import playground.composeapp.generated.resources.compose_multiplatform
 
 @Composable
 @Preview
 fun App() {
-    MaterialTheme {
-        var showContent by remember { mutableStateOf(false) }
-        Column(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.primaryContainer)
-                .safeContentPadding()
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Button(onClick = { showContent = !showContent }) {
-                Text("Click me!")
-            }
-            AnimatedVisibility(showContent) {
-                val greeting = remember { Greeting().greet() }
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-                    Text("Compose: $greeting")
-                }
-            }
-        }
+    TodoAppTheme {
+        val viewModel: TodoListViewModel = viewModel()
+        val uiState by viewModel.uiState.collectAsState()
+
+        TodoListScreen(
+            uiState = uiState,
+            creationUiState = viewModel.creationUiState,
+            onCreateTask = viewModel::showCreateTaskDialog,
+            onToggleComplete = viewModel::toggleTaskCompletion,
+            onDeleteTask = viewModel::deleteTask,
+            onEditTask = { /* TODO: Navigate to edit screen */ },
+            onDismissCreation = viewModel::dismissCreateTaskDialog,
+            onTitleChange = viewModel::updateCreationTitle,
+            onDescriptionChange = viewModel::updateCreationDescription,
+            onSaveTask = viewModel::saveNewTask
+        )
     }
 }
