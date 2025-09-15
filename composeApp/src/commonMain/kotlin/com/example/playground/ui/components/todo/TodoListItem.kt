@@ -45,8 +45,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.playground.domain.model.TodoItem
 import kotlinx.datetime.Clock
-import kotlinx.datetime.format
-import kotlinx.datetime.format.DateTimeComponents
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
@@ -119,9 +118,6 @@ private fun TodoItemCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clickable {
-                onClick(todo)
-            }
             .semantics {
                 contentDescription = if (todo.isCompleted) {
                     "Completed task: ${todo.title}"
@@ -154,7 +150,14 @@ private fun TodoItemCard(
             Spacer(modifier = Modifier.width(12.dp))
 
             Column(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable {
+                        onClick(todo)
+                    }
+                    .semantics {
+                        contentDescription = "Tap to edit task: ${todo.title}"
+                    }
             ) {
                 Text(
                     text = todo.title,
@@ -270,9 +273,18 @@ private fun SwipeDeleteBackground(
  */
 private fun formatTimestamp(instant: kotlinx.datetime.Instant): String {
     return try {
-        instant.format(DateTimeComponents.Formats.RFC_1123)
-            .substringBefore(",")
-            .trim()
+        val localDateTime = instant.toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault())
+        val dayOfWeek = when (localDateTime.dayOfWeek) {
+            kotlinx.datetime.DayOfWeek.MONDAY -> "月"
+            kotlinx.datetime.DayOfWeek.TUESDAY -> "火"
+            kotlinx.datetime.DayOfWeek.WEDNESDAY -> "水"
+            kotlinx.datetime.DayOfWeek.THURSDAY -> "木"
+            kotlinx.datetime.DayOfWeek.FRIDAY -> "金"
+            kotlinx.datetime.DayOfWeek.SATURDAY -> "土"
+            kotlinx.datetime.DayOfWeek.SUNDAY -> "日"
+            else -> "?"
+        }
+        "${localDateTime.year}/${localDateTime.monthNumber.toString().padStart(2, '0')}/${localDateTime.dayOfMonth.toString().padStart(2, '0')}(${dayOfWeek}) ${localDateTime.hour.toString().padStart(2, '0')}:${localDateTime.minute.toString().padStart(2, '0')}"
     } catch (e: Exception) {
         "Recently"
     }

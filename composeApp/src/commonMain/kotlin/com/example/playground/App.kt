@@ -24,12 +24,13 @@ fun App() {
             onRequestDelete = viewModel::requestDeleteTask,
             onConfirmDelete = viewModel::confirmDeleteTask,
             onDismissDeleteDialog = viewModel::dismissDeleteDialog,
-            onEditTask = { /* TODO: Navigate to edit screen */ },
+            onEditTask = viewModel::showEditTaskDialog,
             onDismissCreation = viewModel::dismissCreateTaskDialog,
             onTitleChange = viewModel::updateCreationTitle,
             onDescriptionChange = viewModel::updateCreationDescription,
             onSaveTask = viewModel::saveNewTask,
-            onDismissSuccessMessage = viewModel::dismissSuccessMessage
+            onDismissSuccessMessage = viewModel::dismissSuccessMessage,
+            isEditMode = viewModel.isEditMode
         )
     }
 }

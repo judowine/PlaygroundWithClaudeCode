@@ -59,6 +59,7 @@ fun TodoCreationBottomSheet(
     onTitleChange: (String) -> Unit,
     onDescriptionChange: (String) -> Unit,
     onSave: () -> Unit,
+    isEditMode: Boolean = false,
     modifier: Modifier = Modifier,
     sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 ) {
@@ -74,7 +75,8 @@ fun TodoCreationBottomSheet(
                 onTitleChange = onTitleChange,
                 onDescriptionChange = onDescriptionChange,
                 onSave = onSave,
-                onCancel = onDismiss
+                onCancel = onDismiss,
+                isEditMode = isEditMode
             )
         }
     }
@@ -90,6 +92,7 @@ private fun TodoCreationContent(
     onDescriptionChange: (String) -> Unit,
     onSave: () -> Unit,
     onCancel: () -> Unit,
+    isEditMode: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val titleFocusRequester = remember { FocusRequester() }
@@ -103,7 +106,7 @@ private fun TodoCreationContent(
     ) {
         // Header
         Text(
-            text = "Create New Task",
+            text = if (isEditMode) "Edit Task" else "Create New Task",
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(bottom = 8.dp)
@@ -189,7 +192,7 @@ private fun TodoCreationContent(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                 }
-                Text("Save")
+                Text(if (isEditMode) "Update" else "Save")
             }
         }
     }

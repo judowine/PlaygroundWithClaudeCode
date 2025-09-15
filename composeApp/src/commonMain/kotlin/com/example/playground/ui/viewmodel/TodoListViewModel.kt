@@ -27,6 +27,15 @@ class TodoListViewModel : ViewModel() {
     var creationUiState by mutableStateOf(TodoCreationUiState())
         private set
 
+    // Currently editing todo item (null means creating new)
+    private var editingTodo: TodoItem? = null
+
+    /**
+     * Whether we're currently in edit mode
+     */
+    val isEditMode: Boolean
+        get() = editingTodo != null
+
     // In-memory storage for prototype
     private var todoList = mutableListOf<TodoItem>()
     private var nextId = 1L
@@ -50,6 +59,19 @@ class TodoListViewModel : ViewModel() {
     fun dismissCreateTaskDialog() {
         _uiState.value = _uiState.value.copy(isCreationBottomSheetVisible = false)
         creationUiState = TodoCreationUiState()
+        editingTodo = null
+    }
+
+    /**
+     * Shows the task edit bottom sheet with pre-filled data
+     */
+    fun showEditTaskDialog(todo: TodoItem) {
+        editingTodo = todo
+        creationUiState = TodoCreationUiState(
+            title = todo.title,
+            description = todo.description
+        )
+        _uiState.value = _uiState.value.copy(isCreationBottomSheetVisible = true)
     }
 
     /**
@@ -81,22 +103,37 @@ class TodoListViewModel : ViewModel() {
             // Simulate API call delay
             delay(500)
 
-            val newTodo = TodoItem(
-                id = nextId++,
-                title = creationUiState.title.trim(),
-                description = creationUiState.description.trim(),
-                isCompleted = false,
-                createdAt = Clock.System.now(),
-                updatedAt = Clock.System.now()
-            )
+            val currentEditingTodo = editingTodo
+            if (currentEditingTodo != null) {
+                // Edit existing todo
+                val updatedTodo = currentEditingTodo.copy(
+                    title = creationUiState.title.trim(),
+                    description = creationUiState.description.trim(),
+                    updatedAt = Clock.System.now()
+                )
 
-            todoList.add(0, newTodo) // Add to beginning
-            updateTodoList()
+                val index = todoList.indexOfFirst { it.id == currentEditingTodo.id }
+                if (index >= 0) {
+                    todoList[index] = updatedTodo
+                }
 
-            // Show success message
-            _uiState.value = _uiState.value.copy(
-                successMessage = "Task \"${newTodo.title}\" created successfully!"
-            )
+                updateTodoList()
+                showSuccessMessage("Task '${updatedTodo.title}' updated successfully!")
+            } else {
+                // Create new todo
+                val newTodo = TodoItem(
+                    id = nextId++,
+                    title = creationUiState.title.trim(),
+                    description = creationUiState.description.trim(),
+                    isCompleted = false,
+                    createdAt = Clock.System.now(),
+                    updatedAt = Clock.System.now()
+                )
+
+                todoList.add(0, newTodo) // Add to beginning
+                updateTodoList()
+                showSuccessMessage("Task '${newTodo.title}' created successfully!")
+            }
 
             dismissCreateTaskDialog()
         }
@@ -186,6 +223,13 @@ class TodoListViewModel : ViewModel() {
      */
     fun dismissSuccessMessage() {
         _uiState.value = _uiState.value.copy(successMessage = null)
+    }
+
+    /**
+     * Shows a success message to the user
+     */
+    private fun showSuccessMessage(message: String) {
+        _uiState.value = _uiState.value.copy(successMessage = message)
     }
 
     /**

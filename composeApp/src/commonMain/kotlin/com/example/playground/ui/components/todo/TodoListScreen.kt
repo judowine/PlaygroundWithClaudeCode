@@ -76,6 +76,7 @@ fun TodoListScreen(
     onDescriptionChange: (String) -> Unit,
     onSaveTask: () -> Unit,
     onDismissSuccessMessage: () -> Unit,
+    isEditMode: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -174,7 +175,8 @@ fun TodoListScreen(
             onDismiss = onDismissCreation,
             onTitleChange = onTitleChange,
             onDescriptionChange = onDescriptionChange,
-            onSave = onSaveTask
+            onSave = onSaveTask,
+            isEditMode = isEditMode
         )
 
         // Delete confirmation dialog

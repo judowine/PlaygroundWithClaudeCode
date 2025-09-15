@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import com.example.playground.domain.model.TodoItem
 import com.example.playground.ui.state.TodoEditUiState
 import kotlinx.datetime.Clock
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 /**
@@ -353,7 +354,18 @@ private fun DiscardChangesDialog(
  */
 private fun formatTimestamp(instant: kotlinx.datetime.Instant): String {
     return try {
-        instant.toString().substringBefore('T')
+        val localDateTime = instant.toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault())
+        val dayOfWeek = when (localDateTime.dayOfWeek) {
+            kotlinx.datetime.DayOfWeek.MONDAY -> "月"
+            kotlinx.datetime.DayOfWeek.TUESDAY -> "火"
+            kotlinx.datetime.DayOfWeek.WEDNESDAY -> "水"
+            kotlinx.datetime.DayOfWeek.THURSDAY -> "木"
+            kotlinx.datetime.DayOfWeek.FRIDAY -> "金"
+            kotlinx.datetime.DayOfWeek.SATURDAY -> "土"
+            kotlinx.datetime.DayOfWeek.SUNDAY -> "日"
+            else -> "?"
+        }
+        "${localDateTime.year}/${localDateTime.monthNumber.toString().padStart(2, '0')}/${localDateTime.dayOfMonth.toString().padStart(2, '0')}(${dayOfWeek}) ${localDateTime.hour.toString().padStart(2, '0')}:${localDateTime.minute.toString().padStart(2, '0')}"
     } catch (e: Exception) {
         "Recently"
     }
