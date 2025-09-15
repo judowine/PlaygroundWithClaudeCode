@@ -18,9 +18,16 @@ import kotlinx.datetime.Clock
 
 /**
  * ViewModel for managing the TodoList screen state and operations.
- * This is a prototype implementation using in-memory storage.
+ * TODO: Phase 2でUseCase依存注入を実装予定
+ * 現在は一時的にin-memory storage実装を維持
  */
-class TodoListViewModel : ViewModel() {
+class TodoListViewModel(
+    // TODO: Platform Layer (SK-004) でDI設定予定
+    // private val getTodosUseCase: GetTodosUseCase,
+    // private val createTodoUseCase: CreateTodoUseCase,
+    // private val updateTodoUseCase: UpdateTodoUseCase,
+    // private val deleteTodoUseCase: DeleteTodoUseCase
+) : ViewModel() {
     private val _uiState = MutableStateFlow(TodoListUiState())
     val uiState: StateFlow<TodoListUiState> = _uiState.asStateFlow()
 
