@@ -16,12 +16,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.SwipeLeft
-import androidx.compose.material.icons.outlined.Assignment
+import androidx.compose.material.icons.filled.Assignment
+import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -40,7 +41,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
  */
 @Composable
 fun EmptyStateComponent(
-    icon: ImageVector = Icons.Outlined.Assignment,
+    icon: ImageVector = Icons.Filled.Assignment,
     title: String = "No tasks yet",
     subtitle: String = "Tap the + button to create your first task",
     modifier: Modifier = Modifier
@@ -114,7 +115,7 @@ private fun SwipeHint() {
         Spacer(modifier = Modifier.width(8.dp))
 
         Icon(
-            imageVector = Icons.Default.SwipeLeft,
+            imageVector = Icons.Filled.TouchApp,
             contentDescription = "Swipe left gesture",
             modifier = Modifier
                 .size(16.dp)

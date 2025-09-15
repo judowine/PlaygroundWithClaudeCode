@@ -21,12 +21,15 @@ fun App() {
             creationUiState = viewModel.creationUiState,
             onCreateTask = viewModel::showCreateTaskDialog,
             onToggleComplete = viewModel::toggleTaskCompletion,
-            onDeleteTask = viewModel::deleteTask,
+            onRequestDelete = viewModel::requestDeleteTask,
+            onConfirmDelete = viewModel::confirmDeleteTask,
+            onDismissDeleteDialog = viewModel::dismissDeleteDialog,
             onEditTask = { /* TODO: Navigate to edit screen */ },
             onDismissCreation = viewModel::dismissCreateTaskDialog,
             onTitleChange = viewModel::updateCreationTitle,
             onDescriptionChange = viewModel::updateCreationDescription,
-            onSaveTask = viewModel::saveNewTask
+            onSaveTask = viewModel::saveNewTask,
+            onDismissSuccessMessage = viewModel::dismissSuccessMessage
         )
     }
 }
