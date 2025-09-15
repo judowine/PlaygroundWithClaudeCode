@@ -232,10 +232,12 @@ requirements → ready → active → completed → archived
  （ブロック中）（ブロック中）
 ```
 
-### PBI管理コマンド
+### PBI・開発管理コマンド
 ```bash
 /create-pbi [テーマ]               # インタラクティブPBI作成
 /create-pbi ユーザー認証機能       # テーマ指定でPBI作成
+/ui-dev [PBI-ID]                   # PBIからUI開発ワークフロー実行
+/ui-dev PBI-001A                   # 指定PBIのUI実装開始
 ```
 
 ### PBIディレクトリ構造
@@ -757,6 +759,7 @@ qa-test-strategist: 統合テスト戦略・実装
 ### テンプレート・参考資料
 - **Design Docテンプレート**: `docs/design/templates/design-doc-template.md`
 - **PBI管理ワークフロー**: `docs/pbi/workflow.md`
+- **UI開発ワークフロー**: `docs/workflows/ui-development-workflow.md`
 - **品質ゲート詳細**: `docs/workflow/quality-gates.md`
 - **Multi-Agent開発プロセス**: `docs/workflow/multi-agent-development.md`
 - **リリース・運用保守フロー**: `docs/workflow/release-operations-workflow.md`
