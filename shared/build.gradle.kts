@@ -6,6 +6,8 @@ import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
+    // TODO: Phase 2でKSP plugin有効化予定
+    // alias(libs.plugins.ksp)
 }
 
 kotlin {
@@ -44,11 +46,24 @@ kotlin {
             // put your Multiplatform dependencies here
             implementation(libs.kotlinx.datetime)
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${libs.versions.kotlinx.coroutines.get()}")
+            // TODO: Phase 2でRoom database有効化予定（Android固有に移動）
+            // implementation(libs.room.runtime)
+            // implementation(libs.room.ktx)
+        }
+        androidMain.dependencies {
+            // TODO: Phase 2でAndroid specific Room implementation有効化予定
+            // implementation(libs.room.runtime)
+            // implementation(libs.room.ktx)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
     }
+
+    // TODO: Phase 2でRoom compiler KSP configuration有効化予定
+    // dependencies {
+    //     add("kspAndroid", libs.room.compiler)
+    // }
 }
 
 android {
@@ -62,3 +77,8 @@ android {
         minSdk = libs.versions.android.minSdk.get().toInt()
     }
 }
+
+// TODO: Phase 2でRoom Database KSP configuration有効化予定
+// dependencies {
+//     add("kspAndroid", libs.room.compiler)
+// }
