@@ -200,6 +200,7 @@ private fun TodoCreationContent(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable
 private fun TodoCreationBottomSheetPreview() {
@@ -225,6 +226,7 @@ private fun TodoCreationBottomSheetPreview() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable
 private fun TodoCreationBottomSheetLoadingPreview() {
@@ -247,6 +249,7 @@ private fun TodoCreationBottomSheetLoadingPreview() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable
 private fun TodoCreationBottomSheetErrorPreview() {
