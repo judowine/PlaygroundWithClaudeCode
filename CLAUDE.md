@@ -453,280 +453,791 @@ graph TD
 ├── PBI-001C: TODO編集・削除機能
 ```
 
-## 実装開発フロー（Step 1-2 Standard Process）
+## 実装開発フロー（WBS-Based Layered Development Process）
 
-このプロジェクトでは、PBIの`ready`状態から機能実装完了（統合テスト成功）まで、以下の標準化された2段階プロセスに従います：
+このプロジェクトでは、PBIの`ready`状態から機能実装完了（統合テスト成功）まで、以下のWBSベースの段階的実装プロセスに従います：
 
-### Step 1: Skeleton実装
-PBIの`ready`状態から開始し、実装の骨格を構築します。プロジェクトの性質と要件に応じて適切な実装レベルを選択できます。
+### フロー概要
 
-### Step 1実装の選択肢
+```mermaid
+graph TD
+    A[PBI Ready] --> B[Step 0: WBS作成とタスク分割]
+    B --> C[Step 1: Skeleton実装 - レイヤー別PR]
+    C --> D[Step 2: 実装 - タスク別PR]
+    D --> E[Step 3: 統合テスト - 最終PR]
+    E --> F[PBI Completed]
 
-プロジェクトの性質と要件に応じて、以下から選択：
+    C --> C1[Domain Layer Skeleton PR]
+    C --> C2[Data Layer Skeleton PR]
+    C --> C3[Presentation Layer Skeleton PR]
+    C --> C4[Platform Layer Skeleton PR]
 
-**Option A: Minimal → Full → Layer実装**
+    D --> D1[タスク1 PR]
+    D --> D2[タスク2 PR]
+    D --> D3[タスク3 PR]
+    D --> D4[タスク4 PR]
 ```
-Step 1.0: Minimal Skeleton → Step 1.2: Full Skeleton → Step 2: Layer実装
-```
-- 大規模・複雑な機能向け
-- 早期レビューとアーキテクチャ確認重視
-- ステークホルダーとの方向性合意が必要
 
-**Option B: Full → Layer実装（従来）**
-```
-Step 1.2: Full Skeleton → Step 2: Layer実装  
-```
-- 中規模機能向け
-- 動作確認を早期に行いたい場合
-- プロトタイピング重視
+### 基本原則
 
-**Option C: Direct Layer実装**
-```
-Step 2: Layer実装（Skeletonスキップ）
-```
-- 小規模・定型的な機能向け
-- アーキテクチャが確定済み
-- 高速開発重視
+1. **WBS駆動開発**: 着手前に詳細なWork Breakdown Structureを作成
+2. **レイヤー別Skeleton実装**: 各アーキテクチャ層ごとに独立したPRを提出
+3. **タスク単位PR**: WBSの各タスクごとに独立したPRを作成
+4. **依存関係管理**: 依存タスクはmainブランチマージ完了まで待機
+5. **細粒度コミット**: 最小単位（50-100行）での頻繁なコミット
 
-#### 1.0 Minimal Skeleton実装
-**目的**: 最小限の構造定義による早期レビューと方向性確認
+### 実装選択肢
 
-**実装基準**:
-- **インターフェース定義**: 全メソッドシグネチャのみ
-- **クラス構造**: プロパティ定義とコンストラクタのみ  
-- **実装**: 全メソッドを`TODO()`で実装
-- **依存関係**: 型定義のみ、実装は一切行わない
-- **変更行数制限**: 600行以内（`git diff --stat`基準）
+プロジェクトの複雑度に応じて以下から選択：
+
+**Pattern A: Full WBS Process（推奨）**
+```
+Step 0: WBS作成 → Step 1: Layer Skeleton PRs → Step 2: Task PRs → Step 3: Integration PR
+```
+- **適用**: 中〜大規模機能、新規ドメイン、複雑な要件
+- **メリット**: 品質保証、リスク軽減、並行開発可能
+
+**Pattern B: Simple Layer Process**
+```
+Step 0: Simple WBS → Step 1: Layer PRs → Step 3: Integration PR
+```
+- **適用**: 小規模機能、定型的実装、確立パターン
+- **メリット**: 開発速度、シンプルさ
+
+**Pattern C: Rapid Development**
+```
+Step 0: Task List → Step 2: Feature PR
+```
+- **適用**: 緊急対応、プロトタイピング、単純な修正
+- **制限**: 例外的使用のみ
+
+## Step 0: WBS作成とタスク分割
+
+### 0.1 WBS（Work Breakdown Structure）作成
+
+**目的**: 実装作業を管理可能な単位に分割し、依存関係を明確化
+
+**使用Agent**: `strategic-project-manager` + `architecture-strategist`
+
+**WBS成果物**: `docs/wbs/[PBI-ID]-wbs.md`
+
+**WBSテンプレート**:
+```yaml
+# WBS: [PBI-ID] [機能名]
+project_info:
+  pbi_id: "PBI-001"
+  title: "ローカル完結TODOアプリ"
+  estimate_total: "5-8 days"
+
+phases:
+  phase_1_skeleton:
+    title: "Skeleton実装フェーズ"
+    estimate: "2-3 days"
+    tasks:
+      - id: "SK-001"
+        title: "Domain Layer Skeleton"
+        description: "TodoItem, Repository interface, UseCase interfaces"
+        estimate: "0.5 days"
+        dependencies: []
+        pr_target: "feature/[PBI-ID]-domain-skeleton"
+
+      - id: "SK-002"
+        title: "Data Layer Skeleton"
+        description: "Entity, Dao interface, Repository implementation skeleton"
+        estimate: "0.5 days"
+        dependencies: ["SK-001"]
+        pr_target: "feature/[PBI-ID]-data-skeleton"
+
+      - id: "SK-003"
+        title: "Presentation Layer Skeleton"
+        description: "UiState, ViewModel, Compose screen structure"
+        estimate: "1 day"
+        dependencies: ["SK-001"]
+        pr_target: "feature/[PBI-ID]-presentation-skeleton"
+
+      - id: "SK-004"
+        title: "Platform Layer Skeleton"
+        description: "Database module, DI setup"
+        estimate: "0.5 days"
+        dependencies: ["SK-002"]
+        pr_target: "feature/[PBI-ID]-platform-skeleton"
+
+  phase_2_implementation:
+    title: "実装フェーズ"
+    estimate: "2-3 days"
+    tasks:
+      - id: "IMPL-001"
+        title: "データ永続化実装"
+        description: "Room database, Dao implementation"
+        estimate: "1 day"
+        dependencies: ["SK-002", "SK-004"]
+        pr_target: "feature/[PBI-ID]-data-persistence"
+
+      - id: "IMPL-002"
+        title: "ビジネスロジック実装"
+        description: "UseCase implementation, validation logic"
+        estimate: "0.5 days"
+        dependencies: ["IMPL-001"]
+        pr_target: "feature/[PBI-ID]-business-logic"
+
+      - id: "IMPL-003"
+        title: "UI基本機能実装"
+        description: "Task creation, list display, basic interactions"
+        estimate: "1 day"
+        dependencies: ["SK-003", "IMPL-002"]
+        pr_target: "feature/[PBI-ID]-ui-basic"
+
+      - id: "IMPL-004"
+        title: "UI高度機能実装"
+        description: "Edit, delete, completion toggle, swipe actions"
+        estimate: "0.5 days"
+        dependencies: ["IMPL-003"]
+        pr_target: "feature/[PBI-ID]-ui-advanced"
+
+  phase_3_integration:
+    title: "統合・テストフェーズ"
+    estimate: "1 day"
+    tasks:
+      - id: "INT-001"
+        title: "統合テスト実装"
+        description: "E2E tests, acceptance criteria validation"
+        estimate: "0.5 days"
+        dependencies: ["IMPL-004"]
+        pr_target: "feature/[PBI-ID]-integration-tests"
+
+      - id: "INT-002"
+        title: "最終統合とリリース準備"
+        description: "Final integration, documentation, deployment prep"
+        estimate: "0.5 days"
+        dependencies: ["INT-001"]
+        pr_target: "feature/[PBI-ID]-final-integration"
+```
+
+### 0.2 ブランチ戦略定義
+
+**ブランチ命名規則**:
+```bash
+# Skeleton実装ブランチ
+feature/[PBI-ID]-[layer]-skeleton
+例: feature/PBI-001-domain-skeleton
+
+# 実装タスクブランチ
+feature/[PBI-ID]-[task-name]
+例: feature/PBI-001-data-persistence
+
+# 統合ブランチ
+feature/[PBI-ID]-integration
+例: feature/PBI-001-integration
+```
+
+### 0.3 依存関係管理ルール
+
+**基本ルール**:
+1. **依存タスクの完了待ち**: 依存関係にあるタスクは、依存先がmainにマージされるまで着手禁止
+2. **並行開発許可**: 依存関係のないタスクは並行開発可能
+3. **ブロック時対応**: 依存先の遅延時は、代替タスクまたは並行可能なタスクに着手
+
+**依存関係チェックフロー**:
+```bash
+# タスク開始前チェック
+1. WBSで依存関係確認
+2. 依存先タスクのPR状態確認
+3. mainブランチマージ確認
+4. 着手判断（Go/No-Go）
+```
+
+## Step 1: Skeleton実装 - レイヤー別PR
+
+### 1.1 基本方針
+
+**原則**:
+- **レイヤー単位でPR分離**: Domain, Data, Presentation, Platform各層で独立PR
+- **インターフェース優先**: 実装詳細は後回し、構造とインターフェースを優先
+- **最小実行可能**: コンパイル成功する最小限の実装
+- **TODO活用**: 未実装部分はTODOコメントで実装方針明記
+
+### 1.2 Domain Layer Skeleton実装
+
+**対象ファイル**:
+```
+shared/src/commonMain/kotlin/domain/
+├── model/TodoItem.kt
+├── repository/TodoRepository.kt
+└── usecase/
+    ├── GetTodosUseCase.kt
+    ├── CreateTodoUseCase.kt
+    ├── UpdateTodoUseCase.kt
+    └── DeleteTodoUseCase.kt
+```
 
 **実装例**:
 ```kotlin
-// Domain Layer - 型定義のみ
+// TodoRepository.kt
 interface TodoRepository {
-    suspend fun getAllTodos(): Result<List<TodoItem>> = TODO()
-    suspend fun createTodo(todo: TodoItem): Result<TodoItem> = TODO()
+    fun getAllTodos(): Result<List<TodoItem>>
+    fun createTodo(todo: TodoItem): Result<TodoItem>
+    fun updateTodo(todo: TodoItem): Result<TodoItem>
+    fun deleteTodo(id: Long): Result<Unit>
 }
 
-// UseCase - 構造のみ
+// GetTodosUseCase.kt
 class GetTodosUseCase(
     private val repository: TodoRepository
 ) {
-    suspend operator fun invoke(): Result<List<TodoItem>> = TODO()
+    operator fun invoke(): Result<List<TodoItem>> = TODO("Repository integration pending")
 }
-
-// ViewModel - 状態プロパティのみ
-class TodoListViewModel(
-    private val getTodosUseCase: GetTodosUseCase
-) : ViewModel() {
-    private val _uiState = MutableStateFlow<TodoListUiState>(TODO())
-    val uiState: StateFlow<TodoListUiState> = TODO()
-    
-    fun loadTodos() = TODO()
-    fun deleteTodo(id: Long) = TODO()
-}
-
-// UI State - データクラスのみ
-data class TodoListUiState(
-    val todos: List<TodoItem> = emptyList(),
-    val isLoading: Boolean = false,
-    val errorMessage: String? = null
-)
 ```
 
-**禁止事項**:
-- データベース実装（Room、SQLite等）
-- 実際の業務ロジック記述
-- エラーハンドリングの詳細実装
-- プラットフォーム固有実装
-- テストコード（構造確認のみ）
-
-**完了基準**:
-- 全クラス・メソッドが定義済み
-- コンパイルエラーなし（ただし実行時は全てTODO例外）
-- アーキテクチャ構造の可視化完了
-- 依存関係グラフが明確
-
-#### 1.1 Design Doc作成
-**目的**: 技術仕様と受け入れ条件の明確化
-
-**使用Agent**: `architecture-strategist` + `design-system-ui-architect`
-
-**成果物**: `docs/design/design-docs/[PBI-ID]-design.md`
-
-**内容**:
-- **使用技術**: Kotlin Multiplatform、Compose Multiplatform、Ktor等の具体的技術選択
-- **受け入れ条件**: PBIから抽出した動作要件を技術的に詳述
-- **アーキテクチャ概要**: Layered Architectureでの配置と依存関係
-- **プラットフォーム対応**: 各プラットフォームでの実装方針
-
-**品質基準**:
-- 受け入れ条件が測定可能で具体的
-- 技術選択に明確な根拠
-- プラットフォーム間の一貫性確保
-
-#### 1.2 Full Skeleton実装
-**目的**: 動作可能なプロトタイプレベルの構造実装
-
-**使用Agent**: `frontend-generalist-dev` + `backend-security-architect`
-
-**実装範囲**:
-```kotlin
-// 例: 主要なクラス・メソッド・プロパティを空実装で定義
-class UserRepository {
-    // TODO: データベースアクセス実装
-    suspend fun findUserById(id: String): User? = null
-    
-    // TODO: ユーザー作成処理実装  
-    suspend fun createUser(user: User): Result<User> = TODO()
-}
-
-data class User(
-    val id: String,
-    val name: String,
-    // TODO: その他必要プロパティ追加
-)
-```
-
-**実装基準**:
-- 全てのクラス、メソッド、プロパティを定義
-- モック実装またはTODOコメントで実装方針を明記
-- ビルド・実行可能な状態を保持
-- Layered Architectureの各層を適切に配置
-- **変更行数制限**: 600行以内（`git diff --stat`基準）
-
-#### 1.3 Skeleton PR提出
 **PR要件**:
-- **タイトル**: `[Skeleton] [PBI-ID] [機能名]`
-- **説明**: Design Docへのリンクと実装方針の要約
-- **レビュー観点**: アーキテクチャ構造、命名規則、TODO内容の妥当性
+- **タイトル**: `[Skeleton] [PBI-ID] Domain Layer Implementation`
+- **ブランチ**: `feature/[PBI-ID]-domain-skeleton`
+- **変更行数**: 50-150行
+- **依存関係**: なし
 
-**段階的コミット戦略**:
-Skeleton実装時は以下の順序で段階的にコミット：
+### 1.3 Data Layer Skeleton実装
 
+**対象ファイル**:
+```
+shared/src/commonMain/kotlin/data/
+├── entity/TodoEntity.kt
+├── dao/TodoDao.kt
+├── database/TodoDatabase.kt
+├── repository/TodoRepositoryImpl.kt
+└── mapper/TodoMapper.kt
+```
+
+**実装例**:
+```kotlin
+// TodoRepositoryImpl.kt
+class TodoRepositoryImpl(
+    private val dao: TodoDao,
+    private val mapper: TodoMapper
+) : TodoRepository {
+    override fun getAllTodos(): Result<List<TodoItem>> = TODO("Dao implementation pending")
+    override fun createTodo(todo: TodoItem): Result<TodoItem> = TODO("Create logic pending")
+    // TODO: Other methods
+}
+```
+
+**PR要件**:
+- **タイトル**: `[Skeleton] [PBI-ID] Data Layer Implementation`
+- **ブランチ**: `feature/[PBI-ID]-data-skeleton`
+- **変更行数**: 100-200行
+- **依存関係**: Domain Layer Skeleton (SK-001)
+
+### 1.4 Presentation Layer Skeleton実装
+
+**対象ファイル**:
+```
+composeApp/src/commonMain/kotlin/ui/
+├── state/TodoListUiState.kt
+├── viewmodel/TodoListViewModel.kt
+├── components/
+│   ├── TodoListScreen.kt
+│   ├── TodoListItem.kt
+│   └── TodoCreationDialog.kt
+└── theme/TodoAppTheme.kt
+```
+
+**PR要件**:
+- **タイトル**: `[Skeleton] [PBI-ID] Presentation Layer Implementation`
+- **ブランチ**: `feature/[PBI-ID]-presentation-skeleton`
+- **変更行数**: 200-300行
+- **依存関係**: Domain Layer Skeleton (SK-001)
+
+### 1.5 Platform Layer Skeleton実装
+
+**対象ファイル**:
+```
+composeApp/src/androidMain/kotlin/platform/
+├── DatabaseModule.kt
+├── RepositoryModule.kt
+└── PlatformModule.kt
+```
+
+**PR要件**:
+- **タイトル**: `[Skeleton] [PBI-ID] Platform Layer Implementation`
+- **ブランチ**: `feature/[PBI-ID]-platform-skeleton`
+- **変更行数**: 50-100行
+- **依存関係**: Data Layer Skeleton (SK-002)
+
+### 1.6 コミット戦略（細粒度）
+
+**コミット単位**: 50-100行の最小変更
+
+**Domain Layer コミット例**:
 ```bash
-# 1. Domain Layer（型定義）
-git commit -m "[feat] Domain: TodoItem モデルを追加"
-git commit -m "[feat] Domain: TodoRepository インターフェースを定義"
-git commit -m "[feat] Domain: UseCase クラス群を追加"
+git commit -m "[feat] Domain: TodoItem データクラスを追加
 
-# 2. Data Layer（インターフェース実装）
-git commit -m "[feat] Data: TodoEntity とマッパーを追加"
-git commit -m "[feat] Data: TodoDao インターフェースを定義"
-git commit -m "[feat] Data: TodoRepositoryImpl スケルトンを実装"
+- id, title, description, isCompleted, timestamps プロパティ定義
+- Kotlin Multiplatform 対応
+- 不変オブジェクトとして設計
 
-# 3. Presentation Layer（UI構造）
-git commit -m "[feat] Presentation: TodoListUiState を定義"
-git commit -m "[feat] Presentation: TodoListViewModel スケルトンを実装"
-git commit -m "[feat] Presentation: TodoList画面コンポーネント構造を追加"
+[PBI-001] 25行追加"
 
-# 4. Platform Layer（プラットフォーム固有）
-git commit -m "[feat] Platform: Android用DatabaseModule追加"
-git commit -m "[feat] Platform: 依存性注入設定を追加"
+git commit -m "[feat] Domain: TodoRepository インターフェースを定義
+
+- CRUD操作の基本メソッドシグネチャ
+- Result型によるエラーハンドリング対応
+- suspend function でコルーチン対応
+
+[PBI-001] 15行追加"
+
+git commit -m "[feat] Domain: GetTodosUseCase クラス構造を追加
+
+- Repository依存性注入用コンストラクタ
+- invoke operator でUseCase実行
+- TODO: 実装詳細は次フェーズで対応
+
+[PBI-001] 12行追加"
 ```
 
-**コミット粒度の目安**:
-- **1コミット**: 200行以内、単一責任の実装
-- **PR全体**: 600行以内、5-10コミットに分割
-- **各コミット**: 独立してビルド成功する状態を保持
-
-**品質チェック**:
+**品質チェック（各コミット後）**:
 ```bash
-./gradlew build                    # ビルド成功確認
-./gradlew allTests                 # 基本テスト実行
-./gradlew lint                     # コード品質チェック
+./gradlew :shared:build           # レイヤー単位ビルド確認
+./gradlew :composeApp:build       # アプリレベルビルド確認
+./gradlew check                   # 静的解析・lint確認
 ```
 
-### Step 2: レイヤー別実装とテスト
-Skeleton実装を基に、Layered Architectureに従って段階的に実装します。
+## Step 2: 実装フェーズ - タスク別PR
 
-#### 2.1 タスク分割
-**分割基準**: Layered Architectureの各層
+### 2.1 基本方針
+
+**原則**:
+- **WBSタスク単位でPR作成**: 各実装タスクごとに独立したPRを提出
+- **依存関係の厳格管理**: 依存先タスクのmainマージ完了後に着手
+- **段階的実装**: Skeleton → 基本実装 → 高度機能の順序
+- **継続的品質管理**: 各タスク完了時に品質ゲート通過
+
+### 2.2 タスク実装順序
+
+**Phase 2 実装タスク**:
 ```
-1. Data Layer (Repository, DataSource, Entity)
-2. Domain Layer (UseCase, Domain Model, Repository Interface)  
-3. Presentation Layer (ViewModel, UI Components)
-4. Platform Layer (Platform-specific implementations)
+IMPL-001: データ永続化実装
+    ↓
+IMPL-002: ビジネスロジック実装
+    ↓
+IMPL-003: UI基本機能実装
+    ↓
+IMPL-004: UI高度機能実装
 ```
 
-**使用Agent**: `architecture-strategist`による分割支援
+### 2.3 IMPL-001: データ永続化実装
 
-#### 2.2 各レイヤー実装
-**実装順序**: Data → Domain → Presentation → Platform
+**目的**: Room Database の完全実装とデータアクセス層完成
 
-**各レイヤーPR要件**:
-- **タイトル**: `[Layer] [PBI-ID] [レイヤー名] Implementation`
-- **実装完了基準**: 
-  - 該当レイヤーの全TODOを実装
-  - 単体テスト実装・成功
-  - 上位レイヤーとの統合確認
+**対象ファイル**:
+- `shared/src/androidMain/kotlin/data/database/TodoDatabase.kt`
+- `shared/src/androidMain/kotlin/data/dao/TodoDaoImpl.kt`
+- `shared/src/commonMain/kotlin/data/repository/TodoRepositoryImpl.kt`
 
-**品質基準**:
-- テストカバレッジ > 80%
-- 循環的複雑度 < 10
-- レイヤー間依存関係の適切性
+**実装内容**:
+```kotlin
+@Database(entities = [TodoEntity::class], version = 1)
+abstract class TodoDatabase : RoomDatabase() {
+    abstract fun todoDao(): TodoDao
 
-#### 2.3 統合テスト実装
-**目的**: Design Docの受け入れ条件を満たす動作保証
+    companion object {
+        const val DATABASE_NAME = "todo_database"
+    }
+}
 
-**実装場所**: ViewModelレベルでの結合テスト
+class TodoRepositoryImpl(
+    private val dao: TodoDao,
+    private val mapper: TodoMapper
+) : TodoRepository {
+    override suspend fun getAllTodos(): Result<List<TodoItem>> = runCatching {
+        dao.getAllTodos().map(mapper::toDomain)
+    }
+    // 他のCRUD操作の完全実装
+}
+```
 
-**使用Agent**: `qa-test-strategist`
+**コミット戦略**:
+```bash
+git commit -m "[feat] Data: TodoEntity とマッパーの完全実装
 
-**テスト実装基準**:
+- Room Entity アノテーション追加
+- ドメインモデルとの相互変換実装
+- データベーステーブル定義完了
+
+[PBI-001] [IMPL-001] 45行追加"
+
+git commit -m "[feat] Data: TodoDao の実装完了
+
+- CRUD操作のSQL実装
+- Flow ベースのリアクティブクエリ対応
+- トランザクション処理実装
+
+[PBI-001] [IMPL-001] 60行追加"
+
+git commit -m "[feat] Data: TodoRepositoryImpl 実装完了
+
+- 全CRUD操作の実装
+- エラーハンドリングと Result 型対応
+- 単体テスト追加
+
+[PBI-001] [IMPL-001] 80行追加 / 25行テスト"
+```
+
+**PR要件**:
+- **タイトル**: `[Implementation] [PBI-ID] Data Persistence Implementation`
+- **ブランチ**: `feature/[PBI-ID]-data-persistence`
+- **変更行数**: 150-250行
+- **依存関係**: SK-002 (Data Layer Skeleton), SK-004 (Platform Layer Skeleton)
+- **テスト要件**: データ層単体テスト、統合テスト
+
+### 2.4 IMPL-002: ビジネスロジック実装
+
+**目的**: UseCase層の完全実装とビジネスルール適用
+
+**対象ファイル**:
+- `shared/src/commonMain/kotlin/domain/usecase/*.kt`
+- `shared/src/commonMain/kotlin/domain/validator/TodoValidator.kt`
+
+**実装内容**:
+```kotlin
+class CreateTodoUseCase(
+    private val repository: TodoRepository,
+    private val validator: TodoValidator
+) {
+    suspend operator fun invoke(title: String, description: String): Result<TodoItem> {
+        return validator.validateTodo(title, description)
+            .mapCatching { validatedData ->
+                val todo = TodoItem(
+                    title = validatedData.title,
+                    description = validatedData.description,
+                    createdAt = Clock.System.now()
+                )
+                repository.createTodo(todo).getOrThrow()
+            }
+    }
+}
+```
+
+**PR要件**:
+- **依存関係**: IMPL-001 (データ永続化実装)
+- **変更行数**: 100-200行
+- **テスト要件**: ビジネスロジック単体テスト、バリデーションテスト
+
+### 2.5 IMPL-003: UI基本機能実装
+
+**目的**: Compose UI の基本機能実装（作成、一覧、基本操作）
+
+**対象ファイル**:
+- `composeApp/src/commonMain/kotlin/ui/components/todo/*.kt`
+- `composeApp/src/commonMain/kotlin/ui/viewmodel/TodoListViewModel.kt`
+
+**実装スコープ**:
+- タスク作成フォーム
+- タスク一覧表示
+- 基本的なユーザー操作
+- 状態管理とデータバインディング
+
+**PR要件**:
+- **依存関係**: SK-003 (Presentation Layer Skeleton), IMPL-002 (ビジネスロジック実装)
+- **変更行数**: 200-300行
+- **テスト要件**: UI ユニットテスト、スナップショットテスト
+
+### 2.6 IMPL-004: UI高度機能実装
+
+**目的**: 高度なUI機能実装（編集、削除、スワイプ操作、アニメーション）
+
+**実装スコープ**:
+- タスク編集機能
+- スワイプ削除
+- 完了状態トグル
+- アニメーションとトランジション
+- エラー状態とローディング表示
+
+**PR要件**:
+- **依存関係**: IMPL-003 (UI基本機能実装)
+- **変更行数**: 150-250行
+- **テスト要件**: インタラクションテスト、アクセシビリティテスト
+
+### 2.7 コミット粒度指針
+
+**細粒度コミットの基準**:
+- **50-100行**: 理想的なコミット単位
+- **単一責任**: 1つの機能・修正に限定
+- **ビルド成功**: 各コミット後にビルドが成功する状態
+- **論理的分割**: 関連する変更をグループ化
+
+**コミットメッセージテンプレート**:
+```bash
+[種別] [対象]: [変更内容の要約]
+
+- 変更の詳細1
+- 変更の詳細2
+- 関連する技術的考慮事項
+
+[PBI-ID] [Task-ID] [追加行数]行追加 [削除行数]行削除
+```
+
+**例**:
+```bash
+git commit -m "[feat] ViewModel: TodoListViewModel 状態管理実装
+
+- StateFlow によるリアクティブUI状態管理
+- UseCase 統合と非同期処理対応
+- エラーハンドリングとローディング状態実装
+
+[PBI-001] [IMPL-003] 85行追加 3行削除"
+```
+
+### 2.8 品質チェック（タスク完了時）
+
+**必須チェック項目**:
+```bash
+# ビルド確認
+./gradlew build
+./gradlew :shared:check
+./gradlew :composeApp:check
+
+# テスト実行
+./gradlew test
+./gradlew :shared:allTests
+./gradlew :composeApp:testDebugUnitTest
+
+# 静的解析
+./gradlew lint
+./gradlew detekt
+
+# テストカバレッジ
+./gradlew koverHtmlReport
+# カバレッジ > 80% 確認
+```
+
+**コード品質基準**:
+- **テストカバレッジ**: > 80%
+- **循環的複雑度**: < 10
+- **メソッド行数**: < 50行
+- **クラス行数**: < 300行
+- **依存関係**: レイヤー境界の適切性
+
+## Step 3: 統合・テストフェーズ - 最終PR
+
+### 3.1 INT-001: 統合テスト実装
+
+**目的**: E2Eテストと受け入れ条件の完全検証
+
+**対象ファイル**:
+- `composeApp/src/test/kotlin/integration/*.kt`
+- `composeApp/src/androidTest/kotlin/ui/*.kt`
+
+**テスト実装内容**:
 ```kotlin
 @Test
-fun `ユーザー作成が正常に完了する`() = runTest {
-    // Given: 有効なユーザー情報
-    val userInput = CreateUserRequest(name = "テストユーザー")
-    
-    // When: ユーザー作成を実行
-    val result = viewModel.createUser(userInput)
-    
-    // Then: 受け入れ条件を満たす
-    assertTrue(result.isSuccess)
-    assertEquals("テストユーザー", result.getOrNull()?.name)
-    // TODO: Design Docの全受け入れ条件をテスト
+fun todoCompleteUserJourney() = runTest {
+    // Given: アプリ起動状態
+    composeTestRule.setContent { TodoAppTheme { TodoListScreen(...) } }
+
+    // When & Then: 完全なユーザージャーニーテスト
+    // 1. タスク作成
+    composeTestRule.onNodeWithContentDescription("タスク作成ボタン").performClick()
+    composeTestRule.onNodeWithText("タスクタイトル").performTextInput("買い物")
+    composeTestRule.onNodeWithText("保存").performClick()
+
+    // 2. タスク一覧確認
+    composeTestRule.onNodeWithText("買い物").assertIsDisplayed()
+
+    // 3. タスク完了切り替え
+    composeTestRule.onNodeWithContentDescription("タスクを完了").performClick()
+    composeTestRule.onNodeWithText("買い物")
+        .assertTextEquals("買い物", textDecoration = TextDecoration.LineThrough)
+
+    // 4. タスク編集
+    composeTestRule.onNodeWithText("買い物").performClick()
+    composeTestRule.onNodeWithText("買い物").performTextClearance()
+    composeTestRule.onNodeWithText("買い物").performTextInput("食料品買い物")
+    composeTestRule.onNodeWithText("更新").performClick()
+
+    // 5. タスク削除
+    composeTestRule.onNodeWithText("食料品買い物").performTouchInput { swipeLeft() }
+    composeTestRule.onNodeWithText("削除").performClick()
+    composeTestRule.onNodeWithText("削除").performClick() // 確認ダイアログ
+    composeTestRule.onNodeWithText("食料品買い物").assertDoesNotExist()
 }
 ```
 
-**統合テストPR要件**:
-- **タイトル**: `[Integration] [PBI-ID] [機能名] Integration Tests`
-- **内容**: Design Docの受け入れ条件の完全実装とテスト
-- **成果物**: 動作する機能とテストコード
+**PR要件**:
+- **タイトル**: `[Integration] [PBI-ID] Integration Tests and E2E Validation`
+- **ブランチ**: `feature/[PBI-ID]-integration-tests`
+- **依存関係**: IMPL-004 (UI高度機能実装)
+- **テスト要件**: E2Eテスト、受け入れ条件検証、パフォーマンステスト
 
-### 開発完了の定義
+### 3.2 INT-002: 最終統合とリリース準備
 
-統合テスト成功をもって**開発完了**とします。この時点でPBIは`active`から`completed`状態に移行します。
+**目的**: 全コンポーネントの最終統合と品質確認
 
-**完了条件**:
-- 統合実装品質ゲート合格
-- Design Docの全受け入れ条件を満たす
-- 全プラットフォームでビルド・テスト成功
-- コードレビュー完了・マージ済み
+**実装内容**:
+- 全機能の統合確認
+- パフォーマンス最適化
+- ドキュメント整備
+- リリース準備
 
-**次段階**: リリース・運用保守フローへ移行（別ワークフロー）
+**PR要件**:
+- **タイトル**: `[Final] [PBI-ID] Final Integration and Release Preparation`
+- **ブランチ**: `feature/[PBI-ID]-final-integration`
+- **依存関係**: INT-001 (統合テスト実装)
 
-### 品質ゲート
+### 3.3 最終品質ゲート
 
-#### Skeleton実装品質ゲート
-```yaml
-criteria:
-  design_doc_quality: ">= 4.0"
-  skeleton_completeness: "100% (全構造定義済み)"
-  build_success: "全プラットフォームでビルド成功"
-  architecture_compliance: "Layered Architecture準拠"
-  commit_quality: "適切な粒度でコミット分割済み"
-  change_lines: "<= 600行 (PR全体)"
-  commit_count: "5-10コミット（Skeleton実装）"
+**品質確認項目**:
+```bash
+# 全プラットフォームビルド確認
+./gradlew build
+./gradlew :composeApp:assembleDebug
+./gradlew :composeApp:assembleRelease
+
+# 全テスト実行
+./gradlew test
+./gradlew :composeApp:testDebugUnitTest
+./gradlew :composeApp:connectedAndroidTest
+
+# 品質メトリクス確認
+./gradlew detekt
+./gradlew lint
+./gradlew koverHtmlReport
+
+# パフォーマンステスト
+./gradlew :composeApp:benchmarkDebugAndroidTest
 ```
 
-#### 統合実装品質ゲート  
+## 開発完了の定義
+
+**PBI完了条件**:
+1. **全PRマージ完了**: すべての実装PRがmainブランチにマージ済み
+2. **受け入れ条件満足**: PBIの全受け入れ条件が実装・テスト済み
+3. **品質ゲート通過**: 最終品質確認をクリア
+4. **ドキュメント整備**: 実装ドキュメントと運用ガイド完成
+
+**PBI状態遷移**: `active` → `completed`
+
+## ワークフロー管理とツール
+
+### WBS管理ツール
+
+**WBS進捗管理**: `docs/wbs/[PBI-ID]-progress.md`
 ```yaml
-criteria:
-  feature_completeness: "100% (受け入れ条件満足)"
-  test_coverage: ">= 80%"
-  integration_success: "全統合テスト成功"
-  performance_requirements: "応答時間・リソース使用量基準満足"
+# WBS進捗管理: [PBI-ID]
+last_updated: "2025-01-15T10:30:00Z"
+
+tasks:
+  SK-001:
+    status: "completed"
+    pr_url: "https://github.com/repo/pull/123"
+    merged_at: "2025-01-14T15:20:00Z"
+    actual_effort: "0.3 days"
+
+  SK-002:
+    status: "in_progress"
+    pr_url: "https://github.com/repo/pull/124"
+    started_at: "2025-01-14T16:00:00Z"
+    estimated_completion: "2025-01-15T12:00:00Z"
+
+  IMPL-001:
+    status: "blocked"
+    blocked_by: ["SK-002", "SK-004"]
+    estimated_start: "2025-01-16T09:00:00Z"
+
+overall_progress:
+  completed_tasks: 2
+  total_tasks: 8
+  completion_percentage: 25%
+  on_schedule: true
 ```
+
+### 依存関係チェック自動化
+
+**pre-commit hook**: `.git/hooks/pre-commit`
+```bash
+#!/bin/bash
+# 依存関係チェック
+current_branch=$(git branch --show-current)
+if [[ $current_branch == feature/* ]]; then
+    pbi_id=$(echo $current_branch | cut -d'-' -f2)
+    task_id=$(echo $current_branch | cut -d'-' -f3-)
+
+    # WBSから依存関係確認
+    python scripts/check_dependencies.py $pbi_id $task_id
+    if [ $? -ne 0 ]; then
+        echo "❌ 依存関係エラー: 依存先タスクがマージされていません"
+        exit 1
+    fi
+fi
+```
+
+### PR作成自動化
+
+**PR作成スクリプト**: `scripts/create_task_pr.sh`
+```bash
+#!/bin/bash
+PBI_ID=$1
+TASK_ID=$2
+TASK_NAME=$3
+
+# ブランチ作成
+git checkout -b feature/${PBI_ID}-${TASK_ID}
+
+# PR作成
+gh pr create \
+  --title "[Implementation] ${PBI_ID} ${TASK_NAME}" \
+  --body "$(cat templates/pr_template_${TASK_ID}.md)" \
+  --assignee @me \
+  --label "pbi:${PBI_ID},task:${TASK_ID}"
+```
+
+### 品質ゲート自動化
+
+**GitHub Actions**: `.github/workflows/quality_gate.yml`
+```yaml
+name: Quality Gate
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality_check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build Check
+        run: ./gradlew build
+
+      - name: Test Coverage
+        run: |
+          ./gradlew koverHtmlReport
+          coverage=$(./scripts/extract_coverage.sh)
+          if (( $(echo "$coverage < 80" | bc -l) )); then
+            echo "❌ テストカバレッジ不足: $coverage% < 80%"
+            exit 1
+          fi
+
+      - name: Code Quality
+        run: |
+          ./gradlew detekt
+          ./gradlew lint
+```
+
+## 改善されたワークフローの効果
+
+### メリット
+
+1. **品質向上**: レイヤー別PR により設計品質とコードレビュー品質が向上
+2. **リスク軽減**: 細粒度PRにより問題の早期発見と影響範囲の限定
+3. **並行開発**: 依存関係の明確化により効率的な並行開発が可能
+4. **トレーサビリティ**: WBSベースの管理により進捗とリスクの可視化
+5. **学習効果**: 細かいコミットによる実装プロセスの可視化
+
+### 運用ガイドライン
+
+1. **WBS更新頻度**: 日次での進捗更新
+2. **PR滞留時間**: 24時間以内のレビュー・マージを目標
+3. **依存関係ブロック**: 48時間超過時は代替タスクで並行作業
+4. **品質ゲート失敗**: 即座の修正対応、マージ停止
+5. **コミット頻度**: 機能実装中は2-3時間毎の細かいコミット推奨
 
 ### 開発効率化のコツ
 
