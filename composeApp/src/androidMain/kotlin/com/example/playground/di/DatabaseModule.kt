@@ -1,11 +1,12 @@
 package com.example.playground.di
 
-import android.content.Context
-import androidx.room.Room
-import com.example.playground.data.database.TodoDatabase
-import com.example.playground.data.mapper.TodoMapper
-import com.example.playground.data.repository.TodoRepositoryImpl
-import com.example.playground.domain.repository.TodoRepository
+// TODO: Phase 2でRoom imports有効化予定
+// import android.content.Context
+// import androidx.room.Room
+// import com.example.playground.data.database.TodoDatabase
+// import com.example.playground.data.mapper.TodoMapper
+// import com.example.playground.data.repository.TodoRepositoryImpl
+// import com.example.playground.domain.repository.TodoRepository
 
 /**
  * Database関連のDependency Injection Module
@@ -18,18 +19,16 @@ import com.example.playground.domain.repository.TodoRepository
  */
 object DatabaseModule {
 
+    // TODO: Phase 2でRoom Database完全実装予定
+    /*
     /**
      * TodoDatabase のインスタンスを提供
-     * TODO: Phase 2でRoom Database完全実装予定
      *
      * @param context Application Context
      * @return TodoDatabase instance
      */
     fun provideTodoDatabase(context: Context): TodoDatabase {
-        return TODO("Room Database instance creation - Phase 2で実装予定")
-        /*
-        // Phase 2実装予定内容:
-        Room.databaseBuilder(
+        return Room.databaseBuilder(
             context.applicationContext,
             TodoDatabase::class.java,
             TodoDatabase.DATABASE_NAME
@@ -37,38 +36,28 @@ object DatabaseModule {
         .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING) // WALモード有効化
         .fallbackToDestructiveMigration() // 開発段階での設定
         .build()
-        */
     }
 
     /**
      * TodoRepository の実装インスタンスを提供
-     * TODO: Phase 2でRepository完全実装予定
      *
      * @param database TodoDatabase instance
      * @return TodoRepository implementation
      */
     fun provideTodoRepository(database: TodoDatabase): TodoRepository {
-        return TODO("Repository instance creation - Phase 2で実装予定")
-        /*
-        // Phase 2実装予定内容:
-        TodoRepositoryImpl(
+        return TodoRepositoryImpl(
             dao = database.todoDao(),
             mapper = TodoMapper()
         )
-        */
     }
 
     /**
      * TodoMapper のインスタンスを提供
-     * TODO: Phase 2でMapper完全実装予定
      *
      * @return TodoMapper instance
      */
     fun provideTodoMapper(): TodoMapper {
-        return TODO("Mapper instance creation - Phase 2で実装予定")
-        /*
-        // Phase 2実装予定内容:
-        TodoMapper()
-        */
+        return TodoMapper()
     }
+    */
 }
