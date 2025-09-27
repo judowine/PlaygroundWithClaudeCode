@@ -6,6 +6,8 @@ import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
+    // KSP plugin temporarily commented out due to version compatibility
+    // alias(libs.plugins.ksp)
 }
 
 kotlin {
@@ -45,10 +47,15 @@ kotlin {
             implementation(libs.kotlinx.datetime)
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${libs.versions.kotlinx.coroutines.get()}")
         }
+        androidMain.dependencies {
+            implementation(libs.room.runtime)
+            implementation(libs.room.ktx)
+        }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
     }
+
 }
 
 android {
@@ -62,3 +69,8 @@ android {
         minSdk = libs.versions.android.minSdk.get().toInt()
     }
 }
+
+// KSP dependencies temporarily commented out due to version compatibility
+// dependencies {
+//     add("kspAndroid", libs.room.compiler)
+// }

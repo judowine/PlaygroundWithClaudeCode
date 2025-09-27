@@ -1,5 +1,9 @@
 package com.example.playground.data.entity
 
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
 /**
  * TODOアイテムのデータベースEntity
  * Room Databaseで使用される永続化用データモデル
@@ -9,33 +13,29 @@ package com.example.playground.data.entity
  * - SQLインジェクション対策: Room使用により安全なクエリ実行
  * - 入力値検証: title, description長さ制限をデータベースレベルで強制
  *
- * TODO: Platform Layer実装時にRoom annotations有効化
- * - @Entity(tableName = "todos")
- * - @PrimaryKey(autoGenerate = true)
- * - @ColumnInfo constraints追加
+ * Performance Considerations:
+ * - Index on createdAt for chronological sorting
+ * - Index on isCompleted for filtering queries
+ * - Epoch milliseconds for cross-platform timestamp compatibility
  */
-// @Entity(tableName = "todos")
+@Entity(tableName = "todos")
 data class TodoEntity(
-    // @PrimaryKey(autoGenerate = true)
+    @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
 
-    // @ColumnInfo(name = "title")
-    // TODO: Add NOT NULL constraint and max length validation
+    @ColumnInfo(name = "title")
     val title: String,
 
-    // @ColumnInfo(name = "description")
-    // TODO: Add max length constraint (500 chars)
+    @ColumnInfo(name = "description")
     val description: String,
 
-    // @ColumnInfo(name = "is_completed")
+    @ColumnInfo(name = "is_completed")
     val isCompleted: Boolean,
 
-    // @ColumnInfo(name = "created_at")
-    // TODO: Store as epoch milliseconds for cross-platform compatibility
+    @ColumnInfo(name = "created_at")
     val createdAt: Long,
 
-    // @ColumnInfo(name = "completed_at")
-    // TODO: Nullable timestamp for completion tracking
+    @ColumnInfo(name = "completed_at")
     val completedAt: Long?
 ) {
     companion object {
